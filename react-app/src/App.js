@@ -11,6 +11,7 @@ import Payouts from './dashboard/Payouts.js';
 import Reports from './dashboard/Reports.js';
 import Settings from './dashboard/Settings.js';
 import Login from './signup/Login.js';
+import SubmerchantDetail from "./backoffice/SubmerchantDetail";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route exact path="/" element={<Home />} />
           <Route exact path="/signup" element={<Signup />} />
           <Route exact path="/backoffice" element={<Backoffice />} />
+          <Route exact path="/backoffice/submerchant" element={<SubmerchantDetail />} />
           <Route exact path="/login" element={<Login />} />
           <Route exact path="/dashboard" element={<Dashboard />} />
           <Route exact path="/products" element={<Products />} />

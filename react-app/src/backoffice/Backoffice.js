@@ -19,16 +19,12 @@ import ErrorMessage from "../util/ErrorMessage.js";
 function Backoffice() {
 
     return (
-
         <div>
-
-        <Container maxWidth="sm">
+            <Container maxWidth="sm">
                 <h1> HI BHAVESH </h1>
-          </Container>
-           <Footer/>
-            </div>
-
-
+            </Container>
+            <Footer/>
+        </div>
   );
 }
 
