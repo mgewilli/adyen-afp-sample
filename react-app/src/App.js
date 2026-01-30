@@ -11,6 +11,7 @@ import Reports from './dashboard/Reports.js';
 import Settings from './dashboard/Settings.js';
 import Login from './signup/Login.js';
 import SubmerchantDetails from './backoffice/SubmerchantDetails.js';
+import AccountDetails from './backoffice/AccountDetails.js';
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 <Route exact path="/reports" element={<Reports />} />
                 <Route exact path="/settings" element={<Settings />} />
                 <Route exact path="/backoffice/submerchant/:id" element={<SubmerchantDetails />} />
+                <Route exact path="/backoffice/accounts/:id" element={<AccountDetails />} />
             </Routes>
         </Router>
     );
