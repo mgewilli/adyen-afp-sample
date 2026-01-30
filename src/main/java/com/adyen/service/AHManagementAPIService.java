@@ -42,7 +42,7 @@ public class AHManagementAPIService {
 
     
     public AccountHolder getAH() {
-        var ah = "AH32CMW223227V5L96JRP5PWF";
+        var ah = "AH32272223226D5K3Q74R4W98";
         try {
             AccountHolder response = getAccountHoldersApi().getAccountHolder(ah);
 
@@ -72,6 +72,26 @@ public class AHManagementAPIService {
             return response;
         } catch (Exception e) {
             log.error("Error fetching AccountHolder: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public AccountHolder activeAH() {
+        System.out.println("-------ACTIVATE CALLED-------");
+        var ah = "AH32272223226D5K3Q74R4W98";
+
+        AccountHolderUpdateRequest accountHolderUpdateRequest = new AccountHolderUpdateRequest();
+        accountHolderUpdateRequest.setStatus(AccountHolderUpdateRequest.StatusEnum.ACTIVE);
+        System.out.println(accountHolderUpdateRequest);
+        try {
+            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ah, accountHolderUpdateRequest);
+
+            System.out.println("-------ACTIVATED-------");
+            System.out.println(response);
+            log.info(response.toString());
+            return response;
+        } catch (Exception e) {
+            log.error("Error activating AccountHolder: " + e.getMessage(), e);
             return null;
         }
     }
