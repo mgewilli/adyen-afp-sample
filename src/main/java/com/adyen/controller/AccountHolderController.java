@@ -191,12 +191,8 @@ public class AccountHolderController extends BaseController {
     ResponseEntity<Map<String, Object>> getAccountHolder(@PathVariable String accountHolderId) {
         try {
             Map<String, Object> accountHolderData = accountHoldersCache.get(accountHolderId);
-            
-            if (accountHolderData != null) {
-                log.info("Returning cached account holder: {}", accountHolderId);
-                return new ResponseEntity<>(accountHolderData, HttpStatus.OK);
-            }
-            
+
+
             log.info("Account holder not in cache, fetching from Adyen API: {}", accountHolderId);
             List<Map<String, Object>> result = fetchAccountHoldersPage(List.of(accountHolderId));
             
