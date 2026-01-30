@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import Home from './home/Home.js';
 import Signup from './signup/Signup.js';
+import Backoffice from './backoffice/Backoffice.js';
 import Dashboard from './dashboard/Dashboard.js';
 import Products from './dashboard/Products.js';
 import Transactions from './dashboard/Transactions.js';
@@ -17,6 +18,7 @@ function App() {
          <Routes>
           <Route exact path="/" element={<Home />} />
           <Route exact path="/signup" element={<Signup />} />
+          <Route exact path="/backoffice" element={<Backoffice />} />
           <Route exact path="/login" element={<Login />} />
           <Route exact path="/dashboard" element={<Dashboard />} />
           <Route exact path="/products" element={<Products />} />
