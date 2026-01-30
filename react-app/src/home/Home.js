@@ -47,30 +47,37 @@ function Home() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
     const [isMock, setIsMock] = React.useState(false);
+    const [page, setPage] = React.useState(0);
+    const [totalPages, setTotalPages] = React.useState(0);
+    const [totalElements, setTotalElements] = React.useState(0);
+    const pageSize = 10;
 
-    const loadLegalEntities = React.useCallback(async () => {
+    const loadLegalEntities = React.useCallback(async (pageNum = 0) => {
         setIsLoading(true);
         setError(null);
         setIsMock(false);
 
         try {
-            const response = await fetch('/api/legalEntities', {
+            const response = await fetch(`/api/accountHolders?page=${pageNum}&size=${pageSize}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to fetch legal entities (${response.status})`);
+                throw new Error(`Failed to fetch account holders (${response.status})`);
             }
 
             const data = await response.json();
 
-            const entities = Array.isArray(data) ? data : data?.data;
-            if (!Array.isArray(entities)) {
+            // Handle paginated response
+            if (data.content && Array.isArray(data.content)) {
+                setLegalEntities(data.content);
+                setPage(data.page);
+                setTotalPages(data.totalPages);
+                setTotalElements(data.totalElements);
+            } else {
                 throw new Error('Unexpected response shape');
             }
-
-            setLegalEntities(entities);
         } catch (e) {
             setLegalEntities(mockLegalEntities);
             setIsMock(true);
@@ -81,8 +88,8 @@ function Home() {
     }, []);
 
     React.useEffect(() => {
-        loadLegalEntities();
-    }, [loadLegalEntities]);
+        loadLegalEntities(page);
+    }, [loadLegalEntities, page]);
 
     return (
         <div>
@@ -98,10 +105,10 @@ function Home() {
                         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
                             <Box>
                                 <Typography variant="h4" gutterBottom>
-                                    Legal Entities
+                                    Account Holders
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary">
-                                    {isMock ? "Showing mock data (backend not available)." : "Fetched from your backend."}
+                                    {isMock ? "Showing mock data (backend not available)." : `Showing ${legalEntities.length} of ${totalElements} account holders`}
                                 </Typography>
                                 {error ? (
                                     <Typography variant="body2" color="text.secondary">
@@ -112,13 +119,35 @@ function Home() {
 
                             <Button
                                 variant="contained"
-                                onClick={loadLegalEntities}
+                                onClick={() => loadLegalEntities(page)}
                                 disabled={isLoading}
                                 sx={{ backgroundColor: ADYEN_GREEN, color: "white", "&:hover": { backgroundColor: "green" } }}
                             >
                                 {isLoading ? "Loading..." : "Refresh"}
                             </Button>
                         </Stack>
+
+                        {!isMock && totalPages > 1 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mb: 2 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setPage(page - 1)}
+                                    disabled={page === 0 || isLoading}
+                                >
+                                    Previous
+                                </Button>
+                                <Typography variant="body1">
+                                    Page {page + 1} of {totalPages}
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setPage(page + 1)}
+                                    disabled={page >= totalPages - 1 || isLoading}
+                                >
+                                    Next
+                                </Button>
+                            </Box>
+                        )}
 
                         <Grid container spacing={3}>
                             {(legalEntities || []).map((entity) => (
