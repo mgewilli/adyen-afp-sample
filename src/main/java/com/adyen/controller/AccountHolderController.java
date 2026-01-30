@@ -31,6 +31,8 @@ public class AccountHolderController extends BaseController {
 
     private static final Map<String, Map<String, Object>> accountHoldersCache = new ConcurrentHashMap<>();
     private static final Map<String, Long> pageCacheTimestamps = new ConcurrentHashMap<>();
+    private static final Map<String, List<?>> transactionsCache = new ConcurrentHashMap<>();
+    private static final Map<String, Long> transactionsCacheTimestamps = new ConcurrentHashMap<>();
     private static final long CACHE_DURATION_MS = 5 * 60 * 1000;
     
     private static final List<String> ALL_ACCOUNT_HOLDER_IDS = List.of(
@@ -204,6 +206,31 @@ public class AccountHolderController extends BaseController {
             return new ResponseEntity<>(result.get(0), HttpStatus.OK);
         } catch (Exception e) {
             log.error("Error fetching account holder: {}", accountHolderId, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/accountHolders/{accountHolderId}/transactions")
+    ResponseEntity<?> getAccountHolderTransactions(@PathVariable String accountHolderId) {
+        try {
+            long currentTime = System.currentTimeMillis();
+            Long cacheTime = transactionsCacheTimestamps.get(accountHolderId);
+            
+            List<?> transactions;
+            if (cacheTime != null && (currentTime - cacheTime) < CACHE_DURATION_MS) {
+                log.info("Returning cached transactions for account holder: {}", accountHolderId);
+                transactions = transactionsCache.get(accountHolderId);
+            } else {
+                log.info("Fetching transactions from Adyen API for account holder: {}", accountHolderId);
+                transactions = getConfigurationAPIService().getTransactions(accountHolderId);
+                transactionsCache.put(accountHolderId, transactions);
+                transactionsCacheTimestamps.put(accountHolderId, currentTime);
+            }
+            
+            log.info("Retrieved {} transactions for account holder: {}", transactions.size(), accountHolderId);
+            return new ResponseEntity<>(transactions, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching transactions for account holder: {}", accountHolderId, e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

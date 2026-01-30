@@ -17,6 +17,8 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import Footer from "../layout/Footer";
 
 const defaultFields = [
@@ -94,9 +96,16 @@ function SubmerchantDetail() {
     const [submerchant, setSubmerchant] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+    const [transactionsLoading, setTransactionsLoading] = useState(false);
+    const [currentTab, setCurrentTab] = useState(0);
 
     const handleRowNavigate = (type, id) => {
         navigate(`/backoffice/${type}/${id}`);
+    };
+
+    const handleTabChange = (event, newValue) => {
+        setCurrentTab(newValue);
     };
 
     useEffect(() => {
@@ -117,6 +126,25 @@ function SubmerchantDetail() {
             })
             .finally(() => {
                 setLoading(false);
+            });
+    }, [id]);
+
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+
+        setTransactionsLoading(true);
+
+        axios.get(`/api/accountHolders/${id}/transactions`)
+            .then((response) => {
+                setTransactions(response.data || []);
+            })
+            .catch((e) => {
+                console.error("Failed to load transactions:", e);
+            })
+            .finally(() => {
+                setTransactionsLoading(false);
             });
     }, [id]);
 
@@ -164,7 +192,16 @@ function SubmerchantDetail() {
                     </Button>
                 </Stack>
 
-                <Grid container spacing={3}>
+                <Box sx={{borderBottom: 1, borderColor: 'divider', mt: 3}}>
+                    <Tabs value={currentTab} onChange={handleTabChange}>
+                        <Tab label="Overview" />
+                        <Tab label="Transactions" />
+                        <Tab label="Actions" />
+                    </Tabs>
+                </Box>
+
+                {currentTab === 0 && (
+                <Grid container spacing={3} sx={{mt: 1}}>
                     <Grid item xs={12} md={5}>
                         <Stack spacing={3}>
                             <Paper elevation={1} sx={{p: 3}}>
@@ -342,22 +379,91 @@ function SubmerchantDetail() {
                         </Paper>
                     </Grid>
                 </Grid>
+                )}
 
-                <Box sx={{mt: 3}}>
-                    <Paper elevation={1} sx={{p: 3}}>
-                        <Typography variant="h6" sx={{mb: 2}}>
-                            Actions
-                        </Typography>
-                        <Stack spacing={1.5}>
-                            <Button variant="outlined" onClick={() => console.log("Hi")}>
-                                Suspend sub-merchant
-                            </Button>
-                            <Button variant="outlined" onClick={() => console.log("123")}>
-                                Close account
-                            </Button>
-                        </Stack>
-                    </Paper>
-                </Box>
+                {currentTab === 1 && (
+                    <Box sx={{mt: 3}}>
+                        <Paper elevation={1} sx={{p: 3}}>
+                            <Typography variant="h6" sx={{mb: 2}}>
+                                Transactions
+                            </Typography>
+                            {transactionsLoading && (
+                                <Box sx={{display: "flex", justifyContent: "center", py: 2}}>
+                                    <CircularProgress size={24}/>
+                                </Box>
+                            )}
+                            {!transactionsLoading && transactions.length === 0 && (
+                                <Typography variant="body2" color="text.secondary">
+                                    No transactions found for this account holder.
+                                </Typography>
+                            )}
+                            {!transactionsLoading && transactions.length > 0 && (
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Date</TableCell>
+                                            <TableCell>Description</TableCell>
+                                            <TableCell>Amount</TableCell>
+                                            <TableCell>Status</TableCell>
+                                            <TableCell>Type</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {transactions.map((transaction) => (
+                                            <TableRow key={transaction.id} hover>
+                                                <TableCell>
+                                                    <Typography variant="body2">
+                                                        {transaction.creationDate ? new Date(transaction.creationDate).toLocaleDateString() : '-'}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2">
+                                                        {transaction.description || '-'}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" sx={{
+                                                        color: transaction.amount?.value >= 0 ? 'success.main' : 'error.main',
+                                                        fontWeight: 'medium'
+                                                    }}>
+                                                        {transaction.amount?.value >= 0 ? '+' : ''}
+                                                        {transaction.amount?.value ? (transaction.amount.value / 100).toFixed(2) : '0.00'} {transaction.amount?.currency || ''}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Chip size="small" label={transaction.status || 'Unknown'} />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {transaction.type || '-'}
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </Paper>
+                    </Box>
+                )}
+
+                {currentTab === 2 && (
+                    <Box sx={{mt: 3}}>
+                        <Paper elevation={1} sx={{p: 3}}>
+                            <Typography variant="h6" sx={{mb: 2}}>
+                                Actions
+                            </Typography>
+                            <Stack spacing={1.5}>
+                                <Button variant="outlined" onClick={() => console.log("Hi")}>
+                                    Suspend sub-merchant
+                                </Button>
+                                <Button variant="outlined" onClick={() => console.log("123")}>
+                                    Close account
+                                </Button>
+                            </Stack>
+                        </Paper>
+                    </Box>
+                )}
             </Container>
             <Footer/>
         </div>
