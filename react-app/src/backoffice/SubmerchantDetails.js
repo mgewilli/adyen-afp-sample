@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import axios from "axios";
+
 import {useNavigate, useParams} from "react-router-dom";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
@@ -16,7 +17,6 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
 import Footer from "../layout/Footer";
 
 const defaultFields = [
@@ -107,8 +107,7 @@ function SubmerchantDetail() {
         setLoading(true);
         setError(null);
 
-        axios
-            .post("/api/backoffice/getSubmerchant", {id})
+        axios.get("/api/dashboard/getAccountHolder")
             .then((response) => {
                 setSubmerchant(response.data);
             })
@@ -128,10 +127,10 @@ function SubmerchantDetail() {
         const fallbackMap = new Map(defaultFields.map((f) => [f.label, f.value]));
 
         return [
-            {label: "ID", value: getValue(submerchant?.id, id)},
+            {label: "ID", value: getValue(submerchant?.legalEntityId, id)},
             {
                 label: "Name",
-                value: getValue(submerchant?.name, submerchant?.legalName, fallbackMap.get("Legal name"))
+                value: getValue(submerchant?.description, submerchant?.legalName, fallbackMap.get("Legal name"))
             },
             {
                 label: "Country",
@@ -152,16 +151,17 @@ function SubmerchantDetail() {
     return (
         <div>
             <Container maxWidth="lg" sx={{py: 4}}>
-                <Stack spacing={2} sx={{mb: 3}}>
-                    <Typography variant="h4" component="h1">
-                        Sub-merchant detail
-                    </Typography>
-                    <Stack direction={{xs: "column", sm: "row"}} spacing={2} alignItems="center">
-                        <Chip color="success" label="Operational"/>
-                        <Typography variant="body1" color="text.secondary">
-                            Most important status: Active for processing, payouts enabled.
+                <Stack direction={{xs: "column", sm: "row"}} spacing={2}
+                       alignItems={{xs: "flex-start", sm: "center"}}
+                       justifyContent="space-between">
+                    <Box>
+                        <Typography variant="h4" component="h1">
+                            Sub-merchant details
                         </Typography>
-                    </Stack>
+                    </Box>
+                    <Button variant="outlined" onClick={() => navigate(-1)}>
+                        Back
+                    </Button>
                 </Stack>
 
                 <Grid container spacing={3}>
@@ -189,7 +189,7 @@ function SubmerchantDetail() {
                                 </Stack>
                             </Paper>
 
-                            <Paper elevation={1} sx={{p: 3}}>
+                            <Paper elevation={1} sx={{p: 3}} style={{display: "none"}}>
                                 <Typography variant="h6" sx={{mb: 2}}>
                                     Capabilities
                                 </Typography>
@@ -253,7 +253,6 @@ function SubmerchantDetail() {
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Type</TableCell>
                                             <TableCell>Identifier</TableCell>
                                             <TableCell>Status</TableCell>
                                             <TableCell>Card attached</TableCell>
@@ -271,11 +270,12 @@ function SubmerchantDetail() {
                                                         sx={{cursor: "pointer"}}
                                                         onClick={() => handleRowNavigate("accounts", account.id)}
                                                     >
-                                                        <TableCell>{account.type}</TableCell>
                                                         <TableCell>
                                                             <Stack spacing={0.3}>
-                                                                <Typography variant="body2">{account.iban}</Typography>
-                                                                <Typography variant="caption" color="text.secondary">
+                                                                <Typography
+                                                                    variant="body2">{account.iban}</Typography>
+                                                                <Typography variant="caption"
+                                                                            color="text.secondary">
                                                                     {account.currency}
                                                                 </Typography>
                                                             </Stack>
@@ -344,9 +344,19 @@ function SubmerchantDetail() {
                 </Grid>
 
                 <Box sx={{mt: 3}}>
-                    <Link href="/backoffice" underline="hover">
-                        Back to backoffice
-                    </Link>
+                    <Paper elevation={1} sx={{p: 3}}>
+                        <Typography variant="h6" sx={{mb: 2}}>
+                            Actions
+                        </Typography>
+                        <Stack spacing={1.5}>
+                            <Button variant="outlined" onClick={() => console.log("Hi")}>
+                                Suspend sub-merchant
+                            </Button>
+                            <Button variant="outlined" onClick={() => console.log("123")}>
+                                Close account
+                            </Button>
+                        </Stack>
+                    </Paper>
                 </Box>
             </Container>
             <Footer/>
