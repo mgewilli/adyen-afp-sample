@@ -242,4 +242,19 @@ public class DashboardController extends BaseController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/closeAccountHolder")
+    ResponseEntity<AccountHolder> closeAccountHolder() {
+        try {
+            AccountHolder accountHolder = ahManagementAPIService.closeAH();
+            if (accountHolder != null) {
+                return new ResponseEntity<>(accountHolder, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            log.error("Error closing account holder: " + e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

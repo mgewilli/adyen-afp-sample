@@ -95,6 +95,26 @@ public class AHManagementAPIService {
             return null;
         }
     }
+
+    public AccountHolder closeAH() {
+        System.out.println("-------CLOSE CALLED-------");
+        var ah = "AH32272223226D5K3Q74R4W98";
+
+        AccountHolderUpdateRequest accountHolderUpdateRequest = new AccountHolderUpdateRequest();
+        accountHolderUpdateRequest.setStatus(AccountHolderUpdateRequest.StatusEnum.CLOSED);
+        System.out.println(accountHolderUpdateRequest);
+        try {
+            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ah, accountHolderUpdateRequest);
+
+            System.out.println("-------CLOSED-------");
+            System.out.println(response);
+            log.info(response.toString());
+            return response;
+        } catch (Exception e) {
+            log.error("Error closing AccountHolder: " + e.getMessage(), e);
+            return null;
+        }
+    }
  
     public ApplicationProperty getApplicationProperty() {
         return applicationProperty;

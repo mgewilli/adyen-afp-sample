@@ -25,6 +25,26 @@ export default function AccountHolder() {
     const [activateLoading, setActivateLoading] = useState(false);
     const [activateResponse, setActivateResponse] = useState(null);
     const [activateError, setActivateError] = useState(null);
+    const [closeLoading, setCloseLoading] = useState(false);
+    const [closeResponse, setCloseResponse] = useState(null);
+    const [closeError, setCloseError] = useState(null);
+
+    const handleClose = () => {
+        setCloseLoading(true);
+        setCloseResponse(null);
+        setCloseError(null);
+        axios.get('/api/dashboard/closeAccountHolder')
+            .then((response) => {
+                setCloseResponse(response.data);
+                setCloseLoading(false);
+                setData(response.data);
+            })
+            .catch((error) => {
+                console.error('Close API error:', error);
+                setCloseError('Failed to close Account Holder');
+                setCloseLoading(false);
+            });
+    };
 
     const handleActivate = () => {
         setActivateLoading(true);
@@ -198,6 +218,14 @@ export default function AccountHolder() {
                             >
                                 {suspendLoading ? 'Suspending...' : 'Suspend Account Holder'}
                             </Button>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={handleClose}
+                                disabled={closeLoading}
+                            >
+                                {closeLoading ? 'Closing...' : 'Close Account Holder'}
+                            </Button>
                         </Box>
 
                         {activateError && (
@@ -217,6 +245,16 @@ export default function AccountHolder() {
                         {suspendResponse && (
                             <Alert severity="success" sx={{ mt: 2 }}>
                                 Account Holder suspended successfully. New status: {suspendResponse.status}
+                            </Alert>
+                        )}
+
+                        {closeError && (
+                            <Alert severity="error" sx={{ mt: 2 }}>{closeError}</Alert>
+                        )}
+
+                        {closeResponse && (
+                            <Alert severity="success" sx={{ mt: 2 }}>
+                                Account Holder closed successfully. New status: {closeResponse.status}
                             </Alert>
                         )}
                     </Box>
