@@ -9,6 +9,7 @@ import Transactions from './dashboard/Transactions.js';
 import Payouts from './dashboard/Payouts.js';
 import Reports from './dashboard/Reports.js';
 import Settings from './dashboard/Settings.js';
+import AccountHolder from './dashboard/AccountHolder.js';
 import Login from './signup/Login.js';
 import SubmerchantDetails from './backoffice/SubmerchantDetails.js';
 
@@ -25,6 +26,7 @@ function App() {
                 <Route exact path="/payouts" element={<Payouts />} />
                 <Route exact path="/reports" element={<Reports />} />
                 <Route exact path="/settings" element={<Settings />} />
+                <Route exact path="/accountholder" element={<AccountHolder />} />
                 <Route exact path="/backoffice/submerchant/:id" element={<SubmerchantDetails />} />
             </Routes>
         </Router>

@@ -6,6 +6,7 @@ import com.adyen.model.balanceplatform.AccountHolder;
 import com.adyen.model.legalentitymanagement.LegalEntity;
 import com.adyen.model.legalentitymanagement.OnboardingLink;
 import com.adyen.model.sessionauthentication.AuthenticationSessionResponse;
+import com.adyen.service.AHManagementAPIService;
 import com.adyen.service.ConfigurationAPIService;
 import com.adyen.service.LegalEntityManagementAPIService;
 import com.adyen.service.SessionAuthenticationAPIService;
@@ -36,6 +37,8 @@ public class DashboardController extends BaseController {
     private LegalEntityHandler legalEntityHandler;
     @Autowired
     private ApplicationProperty applicationProperty;
+    @Autowired
+    private AHManagementAPIService ahManagementAPIService;
 
 
     /**
@@ -193,5 +196,20 @@ public class DashboardController extends BaseController {
 
     public void setApplicationProperty(ApplicationProperty applicationProperty) {
         this.applicationProperty = applicationProperty;
+    }
+
+    @GetMapping("/getAccountHolder")
+    ResponseEntity<AccountHolder> getAccountHolder() {
+        try {
+            AccountHolder accountHolder = ahManagementAPIService.getAH();
+            if (accountHolder != null) {
+                return new ResponseEntity<>(accountHolder, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching account holder: " + e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
