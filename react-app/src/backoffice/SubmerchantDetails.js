@@ -107,7 +107,7 @@ function SubmerchantDetail() {
         setLoading(true);
         setError(null);
 
-        axios.get("/api/dashboard/getAccountHolder")
+        axios.get(`/api/accountHolders/${id}`)
             .then((response) => {
                 setSubmerchant(response.data);
             })
