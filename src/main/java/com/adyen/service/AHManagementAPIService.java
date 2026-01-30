@@ -4,6 +4,7 @@ import com.adyen.Client;
 import com.adyen.config.ApplicationProperty;
 import com.adyen.enums.Environment;
 import com.adyen.model.balanceplatform.AccountHolder;
+import com.adyen.model.balanceplatform.AccountHolderUpdateRequest;
 import com.adyen.model.legalentitymanagement.*;
 import com.adyen.service.balanceplatform.AccountHoldersApi;
 import org.slf4j.Logger;
@@ -45,6 +46,27 @@ public class AHManagementAPIService {
         try {
             AccountHolder response = getAccountHoldersApi().getAccountHolder(ah);
 
+            log.info(response.toString());
+            return response;
+        } catch (Exception e) {
+            log.error("Error fetching AccountHolder: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public AccountHolder suspendAH() {
+        System.out.println("-------SUSPEND CALLED-------");
+        var ah = "AH32272223226D5K3Q74R4W98";
+
+        // Create the request object(s)
+        AccountHolderUpdateRequest accountHolderUpdateRequest = new AccountHolderUpdateRequest();
+                accountHolderUpdateRequest.setStatus(AccountHolderUpdateRequest.StatusEnum.SUSPENDED);
+        System.out.println(accountHolderUpdateRequest);
+        try {
+            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ah, accountHolderUpdateRequest);
+
+            System.out.println("-------SUSPENDED-------");
+            System.out.println(response);
             log.info(response.toString());
             return response;
         } catch (Exception e) {

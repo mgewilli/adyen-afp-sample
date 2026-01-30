@@ -212,4 +212,19 @@ public class DashboardController extends BaseController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/suspendAccountHolder")
+    ResponseEntity<AccountHolder> suspendAccountHolder() {
+        try {
+            AccountHolder accountHolder = ahManagementAPIService.suspendAH();
+            if (accountHolder != null) {
+                return new ResponseEntity<>(accountHolder, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            log.error("Error suspending account holder: " + e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
