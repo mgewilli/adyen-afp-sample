@@ -1,8 +1,13 @@
 package com.adyen.controller;
 
 import com.adyen.config.ApplicationProperty;
-import com.adyen.model.*;
+import com.adyen.controller.dto.BankAccountDto;
+import com.adyen.model.OnboardingLinkProperties;
+import com.adyen.model.TransactionItem;
+import com.adyen.model.User;
 import com.adyen.model.balanceplatform.AccountHolder;
+import com.adyen.model.balanceplatform.BalanceAccount;
+import com.adyen.model.balanceplatform.PaymentInstrument;
 import com.adyen.model.legalentitymanagement.LegalEntity;
 import com.adyen.model.legalentitymanagement.OnboardingLink;
 import com.adyen.model.sessionauthentication.AuthenticationSessionResponse;
@@ -87,7 +92,7 @@ public class DashboardController extends BaseController {
 
         Optional<AccountHolder> accountHolder = getConfigurationAPIService().getAccountHolder(getUserIdOnSession());
 
-        if(accountHolder.isPresent()) {
+        if (accountHolder.isPresent()) {
             legalEntityId = accountHolder.get().getLegalEntityId();
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -105,7 +110,7 @@ public class DashboardController extends BaseController {
 
     /**
      * Displays the AccountHolder transactions in a custom view
-     *
+     * <p>
      * This demonstrates how to fetch the AccountHolder transactions via API and
      * display them in a custom-built view
      *
@@ -155,6 +160,22 @@ public class DashboardController extends BaseController {
         } catch (Exception e) {
             log.error(e.getMessage(), e.getCause());
             return new ResponseEntity<>(new AuthenticationSessionResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/listAccounts/{ahCode}")
+    ResponseEntity<List<PaymentInstrument>> listAccounts(@PathVariable String ahCode) {
+        try {
+            List<PaymentInstrument> accountHolder = ahManagementAPIService.getAccounts(ahCode);
+            if (accountHolder != null) {
+                return new ResponseEntity<>(accountHolder, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching account holder: " + e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -213,10 +234,10 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @GetMapping("/suspendAccountHolder")
-    ResponseEntity<AccountHolder> suspendAccountHolder() {
+    @GetMapping("/suspendAccountHolder/{ahId}")
+    ResponseEntity<AccountHolder> suspendAccountHolder(@PathVariable String ahId) {
         try {
-            AccountHolder accountHolder = ahManagementAPIService.suspendAH();
+            AccountHolder accountHolder = ahManagementAPIService.suspendAH(ahId);
             if (accountHolder != null) {
                 return new ResponseEntity<>(accountHolder, HttpStatus.OK);
             } else {
@@ -228,10 +249,10 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @GetMapping("/activateAccountHolder")
-    ResponseEntity<AccountHolder> activateAccountHolder() {
+    @GetMapping("/activateAccountHolder/{ahId}")
+    ResponseEntity<AccountHolder> activateAccountHolder(@PathVariable String ahId) {
         try {
-            AccountHolder accountHolder = ahManagementAPIService.activeAH();
+            AccountHolder accountHolder = ahManagementAPIService.activeAH(ahId);
             if (accountHolder != null) {
                 return new ResponseEntity<>(accountHolder, HttpStatus.OK);
             } else {

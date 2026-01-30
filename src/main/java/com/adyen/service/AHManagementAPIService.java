@@ -3,19 +3,23 @@ package com.adyen.service;
 import com.adyen.Client;
 import com.adyen.config.ApplicationProperty;
 import com.adyen.enums.Environment;
-import com.adyen.model.balanceplatform.AccountHolder;
+import com.adyen.model.balanceplatform.*;
 import com.adyen.model.balanceplatform.AccountHolderUpdateRequest;
-import com.adyen.model.legalentitymanagement.*;
 import com.adyen.service.balanceplatform.AccountHoldersApi;
+import com.adyen.service.balanceplatform.BalanceAccountsApi;
+import com.adyen.service.exception.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * Wraps the Adyen Legal Entity Management API: legalEntities, transferInstruments, hostedOnboarding, etc..
  * It requires the BalancePlatform API key
- *
+ * <p>
  * https://docs.adyen.com/api-explorer/legalentity/
  */
 @Service
@@ -40,7 +44,7 @@ public class AHManagementAPIService {
     @Autowired
     private ApplicationProperty applicationProperty;
 
-    
+
     public AccountHolder getAH() {
         var ah = "AH32272223226D5K3Q74R4W98";
         try {
@@ -55,16 +59,15 @@ public class AHManagementAPIService {
         }
     }
 
-    public AccountHolder suspendAH() {
+    public AccountHolder suspendAH(String ahId) {
         System.out.println("-------SUSPEND CALLED-------");
-        var ah = "AH32272223226D5K3Q74R4W98";
 
         // Create the request object(s)
         AccountHolderUpdateRequest accountHolderUpdateRequest = new AccountHolderUpdateRequest();
                 accountHolderUpdateRequest.setStatus(AccountHolderUpdateRequest.StatusEnum.SUSPENDED);
         System.out.println(accountHolderUpdateRequest);
         try {
-            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ah, accountHolderUpdateRequest);
+            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ahId, accountHolderUpdateRequest);
 
             System.out.println("-------SUSPENDED-------");
             System.out.println(response);
@@ -76,21 +79,21 @@ public class AHManagementAPIService {
         }
     }
 
-    public AccountHolder activeAH() {
+    public AccountHolder activeAH(String ahId) {
         System.out.println("-------ACTIVATE CALLED-------");
-        var ah = "AH32272223226D5K3Q74R4W98";
 
         AccountHolderUpdateRequest accountHolderUpdateRequest = new AccountHolderUpdateRequest();
         accountHolderUpdateRequest.setStatus(AccountHolderUpdateRequest.StatusEnum.ACTIVE);
         System.out.println(accountHolderUpdateRequest);
         try {
-            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ah, accountHolderUpdateRequest);
+            AccountHolder response = getAccountHoldersApi().updateAccountHolder(ahId, accountHolderUpdateRequest);
 
             System.out.println("-------ACTIVATED-------");
             System.out.println(response);
             log.info(response.toString());
             return response;
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("Error activating AccountHolder: " + e.getMessage(), e);
             return null;
         }
@@ -115,7 +118,7 @@ public class AHManagementAPIService {
             return null;
         }
     }
- 
+
     public ApplicationProperty getApplicationProperty() {
         return applicationProperty;
     }
@@ -129,4 +132,24 @@ public class AHManagementAPIService {
         return new AccountHoldersApi(getApiClient());
     }
 
+    public List<PaymentInstrument> getAccounts(String ahCode) {
+        try {
+            PaginatedBalanceAccountsResponse response = getAccountHoldersApi().getAllBalanceAccountsOfAccountHolder(ahCode);
+
+            List<PaymentInstrument> list = response.getBalanceAccounts().stream().map(balanceAccount -> {
+                try {
+                    return new BalanceAccountsApi(getApiClient()).getPaymentInstrumentsLinkedToBalanceAccount(balanceAccount.getId());
+                } catch (ApiException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).flatMap(m -> m.getPaymentInstruments().stream()).toList();
+
+            log.info(response.toString());
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Error fetching AccountHolder: " + e.getMessage(), e);
+            return null;
+        }
+    }
 }

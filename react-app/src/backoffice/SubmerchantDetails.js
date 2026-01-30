@@ -62,38 +62,12 @@ const capabilities = {
     }
 };
 
-const accounts = [
-    {
-        id: "acc_001",
-        type: "Bank account",
-        iban: "NL91 ABNA 0417 1643 00",
-        status: "Active",
-        currency: "EUR",
-        cards: [
-            {
-                id: "card_013",
-                type: "Business card",
-                last4: "3941",
-                status: "Active",
-                holder: "Sofia Nguyen"
-            }
-        ]
-    },
-    {
-        id: "acc_002",
-        type: "Payout account",
-        iban: "NL12 RABO 0101 3129 74",
-        status: "Pending review",
-        currency: "EUR",
-        cards: []
-    }
-];
-
 function SubmerchantDetail() {
     const {id} = useParams();
     const navigate = useNavigate();
 
     const [submerchant, setSubmerchant] = useState(null);
+    const [paymentInstruments, setPaymentInstruments] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [transactions, setTransactions] = useState([]);
@@ -119,6 +93,17 @@ function SubmerchantDetail() {
         axios.get(`/api/accountHolders/${id}`)
             .then((response) => {
                 setSubmerchant(response.data);
+            })
+            .catch((e) => {
+                console.error("API request error:", e);
+                setError("Failed to load sub-merchant details.");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+        axios.get(`/api/dashboard/listAccounts/${id}`)
+            .then((response) => {
+                setPaymentInstruments(response.data);
             })
             .catch((e) => {
                 console.error("API request error:", e);
@@ -170,11 +155,6 @@ function SubmerchantDetail() {
             }
         ];
     }, [id, submerchant]);
-
-    const accountsData = useMemo(() => {
-        const fromApi = submerchant?.accounts;
-        return Array.isArray(fromApi) ? fromApi : accounts;
-    }, [submerchant]);
 
     return (
         <div>
@@ -292,13 +272,32 @@ function SubmerchantDetail() {
                                         <TableRow>
                                             <TableCell>Identifier</TableCell>
                                             <TableCell>Status</TableCell>
-                                            <TableCell>Card attached</TableCell>
                                             <TableCell align="right">Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {accountsData.map((account) => {
-                                            const hasCards = account.cards && account.cards.length > 0;
+                                        {paymentInstruments?.filter((acc) => acc.bankAccount)
+                                            .map((account) => (
+                                                <React.Fragment>
+                                                    <TableRow
+                                                        hover
+                                                        sx={{cursor: "pointer"}}
+                                                        onClick={() => handleRowNavigate("accounts", account.id)}
+                                                    >
+                                                        <TableCell>
+                                                            {account?.bankAccount?.iban}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Chip size="small" label={account.status}/>
+                                                        </TableCell>
+                                                        <TableCell align="right">
+
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </React.Fragment>
+                                            ))}
+                                        {paymentInstruments?.filter((acc) => acc.card)
+                                            .map((account) => {
 
                                             return (
                                                 <React.Fragment key={account.id}>
@@ -308,24 +307,10 @@ function SubmerchantDetail() {
                                                         onClick={() => handleRowNavigate("accounts", account.id)}
                                                     >
                                                         <TableCell>
-                                                            <Stack spacing={0.3}>
-                                                                <Typography
-                                                                    variant="body2">{account.iban}</Typography>
-                                                                <Typography variant="caption"
-                                                                            color="text.secondary">
-                                                                    {account.currency}
-                                                                </Typography>
-                                                            </Stack>
+                                                            {account?.card?.number}
                                                         </TableCell>
                                                         <TableCell>
                                                             <Chip size="small" label={account.status}/>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Chip
-                                                                size="small"
-                                                                label={hasCards ? "Yes" : "No"}
-                                                                color={hasCards ? "success" : "default"}
-                                                            />
                                                         </TableCell>
                                                         <TableCell align="right">
                                                             <Stack direction="row" spacing={1}
@@ -337,37 +322,6 @@ function SubmerchantDetail() {
                                                                     Disable
                                                                 </Button>
                                                             </Stack>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                    <TableRow>
-                                                        <TableCell colSpan={5}
-                                                                   sx={{backgroundColor: "rgba(0,0,0,0.02)"}}>
-                                                            {hasCards ? (
-                                                                <Stack spacing={1} sx={{mt: 0.5}}>
-                                                                    {account.cards.map((card) => (
-                                                                        <Stack
-                                                                            key={card.id}
-                                                                            direction={{xs: "column", sm: "row"}}
-                                                                            spacing={2}
-                                                                            alignItems="center"
-                                                                            sx={{flexWrap: "wrap"}}
-                                                                        >
-                                                                            <Typography variant="body2">
-                                                                                {card.type} •••• {card.last4}
-                                                                            </Typography>
-                                                                            <Typography variant="body2"
-                                                                                        color="text.secondary">
-                                                                                {card.holder}
-                                                                            </Typography>
-                                                                            <Chip size="small" label={card.status}/>
-                                                                        </Stack>
-                                                                    ))}
-                                                                </Stack>
-                                                            ) : (
-                                                                <Typography variant="body2" sx={{mt: 0.5}}>
-                                                                    No cards attached to this account.
-                                                                </Typography>
-                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 </React.Fragment>
@@ -453,8 +407,11 @@ function SubmerchantDetail() {
                                 Actions
                             </Typography>
                             <Stack spacing={1.5}>
-                                <Button variant="outlined" onClick={() => console.log("Hi")}>
+                                <Button variant="outlined" onClick={() => axios.get(`/api/dashboard/suspendAccountHolder/${id}`)}>
                                     Suspend sub-merchant
+                                </Button>
+                                <Button variant="outlined" onClick={() => axios.get(`/api/dashboard/activateAccountHolder/${id}`)}>
+                                    Activate sub-merchant
                                 </Button>
                                 <Button variant="outlined" onClick={() => console.log("123")}>
                                     Close account
