@@ -402,7 +402,7 @@ function SubmerchantDetail() {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell>Date</TableCell>
-                                            <TableCell>Description</TableCell>
+                                            <TableCell>Transaction ID</TableCell>
                                             <TableCell>Amount</TableCell>
                                             <TableCell>Status</TableCell>
                                             <TableCell>Type</TableCell>
@@ -413,21 +413,20 @@ function SubmerchantDetail() {
                                             <TableRow key={transaction.id} hover>
                                                 <TableCell>
                                                     <Typography variant="body2">
-                                                        {transaction.creationDate ? new Date(transaction.creationDate).toLocaleDateString() : '-'}
+                                                        {transaction.created || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Typography variant="body2">
-                                                        {transaction.description || '-'}
+                                                        {transaction.id || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Typography variant="body2" sx={{
-                                                        color: transaction.amount?.value >= 0 ? 'success.main' : 'error.main',
+                                                        color: transaction.type === 'Incoming' ? 'success.main' : 'error.main',
                                                         fontWeight: 'medium'
                                                     }}>
-                                                        {transaction.amount?.value >= 0 ? '+' : ''}
-                                                        {transaction.amount?.value ? (transaction.amount.value / 100).toFixed(2) : '0.00'} {transaction.amount?.currency || ''}
+                                                        {transaction.amount || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell>

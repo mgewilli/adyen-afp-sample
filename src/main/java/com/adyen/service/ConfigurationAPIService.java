@@ -150,8 +150,8 @@ public class ConfigurationAPIService {
 
         try {
 
-            // in the last X days
-            OffsetDateTime createdSince = OffsetDateTime.now().minus(365, ChronoUnit.DAYS);
+            // in the last 6 months (180 days) - API limit
+            OffsetDateTime createdSince = OffsetDateTime.now().minus(180, ChronoUnit.DAYS);
             // until today
             OffsetDateTime createdUntil = OffsetDateTime.now();
             // max number of transactions to fetch

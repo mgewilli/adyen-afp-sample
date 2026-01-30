@@ -226,16 +226,22 @@ public class AccountHolderController extends BaseController {
                 transactions = transactionsCache.get(accountHolderId);
             } else {
                 log.info("Fetching transactions from Adyen API for account holder: {}", accountHolderId);
-                transactions = getConfigurationAPIService().getTransactions(accountHolderId);
-                transactionsCache.put(accountHolderId, transactions);
-                transactionsCacheTimestamps.put(accountHolderId, currentTime);
+                try {
+                    transactions = getConfigurationAPIService().getTransactions(accountHolderId);
+                    transactionsCache.put(accountHolderId, transactions);
+                    transactionsCacheTimestamps.put(accountHolderId, currentTime);
+                } catch (RuntimeException e) {
+                    log.warn("Failed to fetch transactions from Adyen API for account holder {}: {}. Returning empty list. " +
+                            "This may be due to missing Transfers API credentials or permissions.", accountHolderId, e.getMessage());
+                    transactions = new ArrayList<>();
+                }
             }
             
             log.info("Retrieved {} transactions for account holder: {}", transactions.size(), accountHolderId);
             return new ResponseEntity<>(transactions, HttpStatus.OK);
         } catch (Exception e) {
-            log.error("Error fetching transactions for account holder: {}", accountHolderId, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("Unexpected error fetching transactions for account holder: {}", accountHolderId, e);
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
         }
     }
 
