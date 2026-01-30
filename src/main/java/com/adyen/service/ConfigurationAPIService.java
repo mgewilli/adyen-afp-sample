@@ -9,6 +9,7 @@ import com.adyen.model.balanceplatform.*;
 import com.adyen.model.transfers.TransactionSearchResponse;
 import com.adyen.service.balanceplatform.AccountHoldersApi;
 import com.adyen.service.balanceplatform.BalanceAccountsApi;
+import com.adyen.service.balanceplatform.PaymentInstrumentsApi;
 import com.adyen.service.transfers.TransactionsApi;
 import com.adyen.util.TransactionHandler;
 import org.slf4j.Logger;
@@ -170,6 +171,28 @@ public class ConfigurationAPIService {
 
     }
 
+    /**
+     * Get payment instruments for a balance account
+     * @param balanceAccountCode
+     * @return
+     */
+    public PaginatedPaymentInstrumentsResponse getPaymentInstruments(String balanceAccountCode) {
+
+        PaginatedPaymentInstrumentsResponse paymentInstruments = null;
+
+        try {
+            paymentInstruments = getBalanceAccountsApi().getPaymentInstrumentsLinkedToBalanceAccount(balanceAccountCode);
+            log.info("Retrieved {} payment instruments for balance account: {}", 
+                    paymentInstruments.getPaymentInstruments() != null ? paymentInstruments.getPaymentInstruments().size() : 0, 
+                    balanceAccountCode);
+        } catch (Exception e) {
+            log.error(e.toString(), e);
+            throw new RuntimeException("Cannot get payment instruments: " + e.getMessage());
+        }
+
+        return paymentInstruments;
+    }
+
     // AccountHoldersApi handler
     private AccountHoldersApi getAccountHoldersApi() {
         return new AccountHoldersApi(getApiClient());
@@ -178,6 +201,11 @@ public class ConfigurationAPIService {
     // BalanceAccountsApi handler
     private BalanceAccountsApi getBalanceAccountsApi() {
         return new BalanceAccountsApi(getApiClient());
+    }
+
+    // PaymentInstrumentsApi handler
+    private PaymentInstrumentsApi getPaymentInstrumentsApi() {
+        return new PaymentInstrumentsApi(getApiClient());
     }
 
     private TransactionsApi getTransactionsApi() {

@@ -42,13 +42,14 @@ public class AHManagementAPIService {
 
     
     public AccountHolder getAH() {
-        var ah = "AH32272223226D5K3Q74R4W98";
+        var ah = "AH32CMW223227V5L96JRP5PWF";
         try {
             AccountHolder response = getAccountHoldersApi().getAccountHolder(ah);
 
             log.info(response.toString());
             return response;
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("Error fetching AccountHolder: " + e.getMessage(), e);
             return null;
         }

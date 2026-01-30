@@ -18,6 +18,7 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class LoginController extends BaseController {
 
+    private static final String DEFAULT_CREDENTIALS = "admin";
     private final Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @Autowired
@@ -25,17 +26,16 @@ public class LoginController extends BaseController {
 
     /**
      * Perform user login.
-     * Username should be a valid AccountHolder id, password is ignored for demo purposes
+     * Accepts hardcoded credentials: admin/admin for demo purposes
+     *
      * @param userLogin User credentials from Login form
      * @return
      */
     @PostMapping("/login")
-    ResponseEntity<String> login(@RequestBody UserLogin userLogin)  {
+    ResponseEntity<String> login(@RequestBody UserLogin userLogin) {
 
-        Optional<AccountHolder> accountHolder = getConfigurationAPIService().getAccountHolder(userLogin.getUsername());
-
-        if(accountHolder.isPresent()) {
-            setUserIdOnSession(accountHolder.get().getId());
+        if (DEFAULT_CREDENTIALS.equals(userLogin.getUsername()) && DEFAULT_CREDENTIALS.equals(userLogin.getPassword())) {
+            setUserIdOnSession(DEFAULT_CREDENTIALS);
             return ResponseEntity.ok().body("");
         } else {
             return ResponseEntity.status(403).body("Invalid username or password");
@@ -44,10 +44,11 @@ public class LoginController extends BaseController {
 
     /**
      * Perform user logout, removing userId from HTTP Session.
+     *
      * @return
      */
     @PostMapping("/logout")
-    ResponseEntity<String>  logout()  {
+    ResponseEntity<String> logout() {
         removeUserIdFromSession();
         return ResponseEntity.ok().body("");
     }

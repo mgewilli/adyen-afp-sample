@@ -27,7 +27,7 @@ const mockLegalEntities = [
     },
     {
         id: "LE0000000000000002",
-        legalName: "Ekin's Café",
+        legalName: "Bruce's Café",
         type: "soleProprietorship",
         country: "DE",
         status: "pending",
