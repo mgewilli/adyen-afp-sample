@@ -107,14 +107,7 @@ function Home() {
                                 <Typography variant="h4" gutterBottom>
                                     Account Holders
                                 </Typography>
-                                <Typography variant="body1" color="text.secondary">
-                                    {isMock ? "Showing mock data (backend not available)." : `Showing ${legalEntities.length} of ${totalElements} account holders`}
-                                </Typography>
-                                {error ? (
-                                    <Typography variant="body2" color="text.secondary">
-                                        {error}
-                                    </Typography>
-                                ) : null}
+
                             </Box>
 
                             <Button
